@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f766e"><title>كن مع الله</title>
+<style>
+:root{--p:#0f766e;--p2:#115e59;--bg:#f4f8f6;--card:#fff;--text:#17312e;--muted:#71807d;--line:#e1ebe7}
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input{font:inherit}button{cursor:pointer;border:0}.wrap{width:min(1080px,92%);margin:auto}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}.nav{height:68px;display:flex;justify-content:space-between;align-items:center}.logo{font-size:22px;font-weight:800;color:var(--p)}
+.btn{padding:11px 17px;border-radius:12px;background:var(--p);color:#fff}.btn.gray{background:#edf3f1;color:var(--p)}.btn.red{background:#fee2e2;color:#991b1b}
+.hero{margin:30px 0;padding:42px;border-radius:26px;background:linear-gradient(135deg,#e4f4ef,#fff5d9)}.hero h1{font-size:42px;margin:0 0 8px}.hero h1 span{color:var(--p)}.hero p{color:var(--muted);font-size:17px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:21px;padding:24px;margin:20px 0;box-shadow:0 8px 28px #17312e0a}.panel h2{margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.prayer{border:1px solid var(--line);border-radius:16px;padding:15px;text-align:center}.prayer h3{margin:0 0 5px}.state{min-height:24px;color:var(--muted);font-size:13px}.prayer button{width:100%;margin-top:7px;padding:9px;border-radius:10px;background:#edf3f1;color:var(--p)}.prayer button.active.ok{background:#dcfce7;color:#166534}.prayer button.active.no{background:#fee2e2;color:#991b1b}.prayer button.active.lazy{background:#fff0bf;color:#805b00}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{text-align:center;background:#f7faf9;border-radius:15px;padding:16px}.stat b{display:block;font-size:28px;color:var(--p)}
+.history-row{display:flex;justify-content:space-between;padding:11px 3px;border-bottom:1px solid #edf2f0}
+.auth{position:fixed;inset:0;background:#0008;display:none;place-items:center;padding:18px;z-index:50}.auth.show{display:grid}.modal{width:min(410px,100%);background:#fff;border-radius:22px;padding:25px}.modal input{display:block;width:100%;padding:13px;margin:9px 0 14px;border:1px solid #d9e4e1;border-radius:12px;outline:none}.modal input:focus{border-color:var(--p)}.switch{display:flex;gap:8px;margin-bottom:16px}.switch button{flex:1;padding:10px;border-radius:10px;background:#edf3f1;color:var(--p)}.switch .sel{background:var(--p);color:#fff}.msg{min-height:25px;color:#b42318;font-size:13px}
+.hidden{display:none!important}footer{text-align:center;color:var(--muted);padding:35px}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.hero{padding:28px}.hero h1{font-size:32px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><div class="logo">☪ كن مع الله</div><div id="userArea"></div></div></header>
+<main class="wrap">
+<section class="hero"><h1>كن مع الله، <span>تطمئن القلوب</span></h1><p>تابع صلواتك يومًا بيوم، واحفظ تقدمك على جهازك بسهولة — بدون Firebase وبدون إعدادات معقدة.</p><button id="openBtn" class="btn" onclick="openAuth()">إنشاء حساب / دخول</button></section>
+
+<div id="content" class="hidden">
+<section class="panel"><h2>🕌 إتمام الصلاة</h2><p>اختر حالتك لكل صلاة. الهدف هو المتابعة والتشجيع، وليس الحكم عليك.</p><div id="prayers" class="grid"></div></section>
+<section class="panel"><h2>📊 حساب اليوم</h2><div class="stats">
+<div class="stat"><b id="done">0</b>تمت الصلاة</div><div class="stat"><b>5</b>الصلوات</div><div class="stat"><b id="percent">0%</b>نسبة اليوم</div><div class="stat"><b id="streak">0</b>أيام متتالية</div>
+</div></section>
+<section class="panel"><h2>📅 سجل الأيام</h2><div id="history">لا يوجد سجل.</div></section>
+</div>
+</main>
+<footer>© 2026 كن مع الله</footer>
+
+<div id="auth" class="auth"><div class="modal">
+<div class="switch"><button id="loginTab" class="sel" onclick="mode('login')">دخول</button><button id="signupTab" onclick="mode('signup')">إنشاء حساب</button></div>
+<div id="loginBox"><h2>تسجيل الدخول</h2><input id="lu" placeholder="اسم المستخدم"><input id="lp" type="password" placeholder="كلمة السر"><button class="btn" style="width:100%" onclick="login()">دخول</button></div>
+<div id="signupBox" class="hidden"><h2>إنشاء حساب</h2><input id="su" placeholder="اسم المستخدم"><input id="sp" type="password" placeholder="كلمة السر"><button class="btn" style="width:100%" onclick="signup()">إنشاء الحساب</button></div>
+<div id="msg" class="msg"></div><button class="btn gray" onclick="closeAuth()">إغلاق</button>
+</div></div>
+
+<script>
+const prayers=["الفجر","الظهر","العصر","المغرب","العشاء"];
+let current=null,data={};
+const keyUsers="kan_users_v1",keySession="kan_session_v1";
+const users=()=>JSON.parse(localStorage.getItem(keyUsers)||"{}");
+const saveUsers=u=>localStorage.setItem(keyUsers,JSON.stringify(u));
+const day=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const esc=s=>String(s).replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]));
+function openAuth(){document.getElementById("auth").classList.add("show");mode("login")}
+function closeAuth(){document.getElementById("auth").classList.remove("show");document.getElementById("msg").textContent=""}
+function mode(x){document.getElementById("loginBox").classList.toggle("hidden",x!=="login");document.getElementById("signupBox").classList.toggle("hidden",x!=="signup");document.getElementById("loginTab").classList.toggle("sel",x==="login");document.getElementById("signupTab").classList.toggle("sel",x==="signup");document.getElementById("msg").textContent=""}
+function passHash(p){let h=2166136261;for(let i=0;i<p.length;i++){h^=p.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
+function signup(){
+ const u=document.getElementById("su").value.trim(),p=document.getElementById("sp").value;
+ if(!/^[A-Za-z0-9_]{3,20}$/.test(u))return msg("اسم المستخدم: إنجليزي/أرقام/ _ من 3 إلى 20 حرفًا.");
+ if(p.length<6)return msg("كلمة السر يجب أن تكون 6 أحرف على الأقل.");
+ let all=users(),id=u.toLowerCase();
+ if(all[id])return msg("اسم المستخدم مستخدم بالفعل.");
+ all[id]={username:u,pass:passHash(p),created:Date.now(),prayers:{}};
+ saveUsers(all);current=id;localStorage.setItem(keySession,id);closeAuth();render();
+}
+function login(){
+ const u=document.getElementById("lu").value.trim(),p=document.getElementById("lp").value,all=users(),id=u.toLowerCase();
+ if(!all[id]||all[id].pass!==passHash(p))return msg("اسم المستخدم أو كلمة السر غير صحيحة.");
+ current=id;localStorage.setItem(keySession,id);closeAuth();render();
+}
+function msg(t){document.getElementById("msg").textContent=t}
+function logout(){current=null;localStorage.removeItem(keySession);document.getElementById("content").classList.add("hidden");document.getElementById("openBtn").classList.remove("hidden");document.getElementById("userArea").innerHTML=""}
+function render(){
+ const all=users(),u=all[current];if(!u)return logout();
+ document.getElementById("content").classList.remove("hidden");document.getElementById("openBtn").classList.add("hidden");
+ document.getElementById("userArea").innerHTML=`مرحبًا <b>${esc(u.username)}</b> <button class="btn red" onclick="logout()">خروج</button>`;
+ data=u.prayers[day()]||{};renderPrayers();stats();history();
+}
+function renderPrayers(){
+ document.getElementById("prayers").innerHTML=prayers.map(p=>{let v=data[p]||"";
+ let text=v==="done"?"تمت الصلاة":v==="missed"?"فاتتني":v==="lazy"?"غلبني الكسل":"لم تُسجل";
+ return `<div class="prayer"><h3>${p}</h3><div class="state">${text}</div>
+ <button class="${v==="done"?"active ok":""}" onclick="setPrayer('${p}','done')">✅ صليت</button>
+ <button class="${v==="missed"?"active no":""}" onclick="setPrayer('${p}','missed')">❌ فاتتني</button>
+ <button class="${v==="lazy"?"active lazy":""}" onclick="setPrayer('${p}','lazy')">😔 غلبني الكسل</button></div>`}).join("");
+}
+function setPrayer(p,v){let all=users();all[current].prayers[day()]={...(all[current].prayers[day()]||{}),[p]:v};saveUsers(all);data=all[current].prayers[day()];renderPrayers();stats();history()}
+function stats(){let n=prayers.filter(p=>data[p]==="done").length;document.getElementById("done").textContent=n;document.getElementById("percent").textContent=Math.round(n/5*100)+"%"}
+function history(){
+ const all=users()[current].prayers||{},dates=Object.keys(all).sort().reverse(),box=document.getElementById("history");
+ if(!dates.length){box.textContent="لا يوجد سجل.";document.getElementById("streak").textContent=0;return}
+ box.innerHTML=dates.slice(0,60).map(d=>{let n=prayers.filter(p=>all[d][p]==="done").length;return `<div class="history-row"><span>${d}</span><b>${n}/5 (${Math.round(n/5*100)}%)</b></div>`}).join("");
+ let streak=0,dt=new Date();
+ while(true){let k=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");if(all[k]&&prayers.every(p=>all[k][p]==="done")){streak++;dt.setDate(dt.getDate()-1)}else break}
+ document.getElementById("streak").textContent=streak;
+}
+(function(){let s=localStorage.getItem(keySession);if(s&&users()[s]){current=s;render()}})();
+</script>
+</body>
+</html>

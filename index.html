@@ -1,99 +1,311 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0f766e"><title>كن مع الله</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<title>كن مع الله - الإصدار الشامل</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--p:#0f766e;--p2:#115e59;--bg:#f4f8f6;--card:#fff;--text:#17312e;--muted:#71807d;--line:#e1ebe7}
-*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text)}
-button,input{font:inherit}button{cursor:pointer;border:0}.wrap{width:min(1080px,92%);margin:auto}
-header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}.nav{height:68px;display:flex;justify-content:space-between;align-items:center}.logo{font-size:22px;font-weight:800;color:var(--p)}
-.btn{padding:11px 17px;border-radius:12px;background:var(--p);color:#fff}.btn.gray{background:#edf3f1;color:var(--p)}.btn.red{background:#fee2e2;color:#991b1b}
-.hero{margin:30px 0;padding:42px;border-radius:26px;background:linear-gradient(135deg,#e4f4ef,#fff5d9)}.hero h1{font-size:42px;margin:0 0 8px}.hero h1 span{color:var(--p)}.hero p{color:var(--muted);font-size:17px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:21px;padding:24px;margin:20px 0;box-shadow:0 8px 28px #17312e0a}.panel h2{margin-top:0}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.prayer{border:1px solid var(--line);border-radius:16px;padding:15px;text-align:center}.prayer h3{margin:0 0 5px}.state{min-height:24px;color:var(--muted);font-size:13px}.prayer button{width:100%;margin-top:7px;padding:9px;border-radius:10px;background:#edf3f1;color:var(--p)}.prayer button.active.ok{background:#dcfce7;color:#166534}.prayer button.active.no{background:#fee2e2;color:#991b1b}.prayer button.active.lazy{background:#fff0bf;color:#805b00}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{text-align:center;background:#f7faf9;border-radius:15px;padding:16px}.stat b{display:block;font-size:28px;color:var(--p)}
-.history-row{display:flex;justify-content:space-between;padding:11px 3px;border-bottom:1px solid #edf2f0}
-.auth{position:fixed;inset:0;background:#0008;display:none;place-items:center;padding:18px;z-index:50}.auth.show{display:grid}.modal{width:min(410px,100%);background:#fff;border-radius:22px;padding:25px}.modal input{display:block;width:100%;padding:13px;margin:9px 0 14px;border:1px solid #d9e4e1;border-radius:12px;outline:none}.modal input:focus{border-color:var(--p)}.switch{display:flex;gap:8px;margin-bottom:16px}.switch button{flex:1;padding:10px;border-radius:10px;background:#edf3f1;color:var(--p)}.switch .sel{background:var(--p);color:#fff}.msg{min-height:25px;color:#b42318;font-size:13px}
-.hidden{display:none!important}footer{text-align:center;color:var(--muted);padding:35px}
-@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.hero{padding:28px}.hero h1{font-size:32px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+:root{
+  --p:#0f766e; --p2:#115e59; --p-light:#ccfbf1;
+  --bg:#f6fbf9; --card:#ffffff; --text:#132e2b; --muted:#6b7f7c; --line:#dde9e6;
+  --radius:20px;
+  --shadow:0 10px 30px rgba(15,118,110,.08);
+}
+.dark{
+  --bg:#0a1917; --card:#132522; --text:#e6f5f2; --muted:#8aa39f; --line:#1e3a36;
+  --p-light:#1a3a37;
+  --shadow:0 10px 30px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:'Tajawal',Tahoma,sans-serif;background:var(--bg);color:var(--text);transition:.3s}
+button,input,select{font:inherit}
+button{cursor:pointer;border:0}
+a{color:inherit}
+.wrap{width:min(1160px,92%);margin:auto}
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--card) 90%, transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav{height:70px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font-weight:800;font-size:22px;color:var(--p);display:flex;align-items:center;gap:8px}
+.nav-actions{display:flex;gap:8px;align-items:center}
+.icon-btn{width:42px;height:42px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;font-size:18px;transition:.2s}
+.icon-btn:hover{transform:translateY(-1px)}
+.btn{padding:11px 18px;border-radius:12px;background:var(--p);color:#fff;font-weight:700;transition:.2s}
+.btn:hover{background:var(--p2)} .btn.gray{background:var(--p-light);color:var(--p)} .btn.red{background:#fee2e2;color:#991b1b}
+.dark .btn.gray{background:#1e3a36;color:#9fe6d9} .dark .btn.red{background:#3f1e1e;color:#ffb4ab}
+
+.layout{display:grid;grid-template-columns:260px 1fr;gap:18px;margin:22px auto 40px}
+.sidebar{position:sticky;top:90px;height:fit-content;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.menu{display:flex;flex-direction:column;gap:8px}
+.menu button{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:14px;background:transparent;color:var(--text);text-align:right;width:100%;font-weight:500;transition:.2s;border:1px solid transparent}
+.menu button.active{background:var(--p);color:#fff;box-shadow:0 6px 18px rgba(15,118,110,.25)}
+.menu button:not(.active):hover{background:var(--p-light)}
+.main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.panel h2{margin:0 0 6px;font-size:22px;display:flex;align-items:center;gap:8px}
+.panel p.sub{margin:0 0 16px;color:var(--muted)}
+
+.hero{padding:28px;border-radius:26px;background:linear-gradient(135deg,#dcfce7 0%,#ccfbf1 35%,#fef9c3 100%);border:1px solid var(--line);position:relative;overflow:hidden}
+.dark .hero{background:linear-gradient(135deg,#132522 0%,#1a3a37 60%,#2a2a1a 100%)}
+.hero h1{font-size:34px;margin:0 0 8px;line-height:1.2}.hero h1 span{color:var(--p)}
+.qibla{font-family:'Amiri',serif;font-size:18px;color:var(--muted)}
+
+.grid-prayers{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.prayer{border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center;background:var(--bg);transition:.2s}
+.prayer h3{margin:0 0 4px;font-size:17px}
+.state{min-height:22px;color:var(--muted);font-size:12px;margin-bottom:8px}
+.prayer button{width:100%;margin-top:6px;padding:8px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--text);font-size:13px}
+.prayer button.ok.active{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+.prayer button.no.active{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+.prayer button.lazy.active{background:#fef3c7;color:#92400e;border-color:#fde68a}
+.prayer.done-card{border-color:#0f766e;background:color-mix(in srgb,var(--p-light) 70%, transparent)}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:15px;padding:16px}
+.stat b{display:block;font-size:28px;color:var(--p)}
+.stat small{color:var(--muted)}
+
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-head{font-weight:700;color:var(--muted);text-align:center;padding:6px;font-size:13px}
+.cal-day{aspect-ratio:1;border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--card);font-size:13px;position:relative;cursor:default}
+.cal-day.has-data{cursor:pointer}
+.cal-day.today{border-color:var(--p);box-shadow:0 0 0 2px var(--p-light)}
+.cal-day .dot{width:6px;height:6px;border-radius:50%;background:var(--p);position:absolute;bottom:5px}
+.cal-day.perfect{background:#dcfce7;color:#14532d} .dark .cal-day.perfect{background:#123a2a}
+.cal-day.partial{background:#fef3c7} .dark .cal-day.partial{background:#3a3212}
+
+.view{display:none} .view.active{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.azkar-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.zekr{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--bg)}
+.zekr h4{margin:0 0 6px} .zekr p{margin:0;color:var(--muted);font-family:'Amiri',serif;font-size:17px;line-height:1.8}
+.zekr .meta{display:flex;justify-content:space-between;margin-top:10px;align-items:center}
+.counter{display:flex;gap:8px;align-items:center}
+
+.tasbih{text-align:center;padding:20px}
+.tasbih-ring{width:200px;height:200px;border-radius:50%;margin:18px auto;background:conic-gradient(from 0deg,var(--p),var(--p2));display:grid;place-items:center;position:relative;box-shadow:0 12px 30px rgba(15,118,110,.3)}
+.tasbih-inner{width:172px;height:172px;border-radius:50%;background:var(--card);display:grid;place-items:center}
+.tasbih-num{font-size:52px;font-weight:800;color:var(--p)}
+.tasbih-word{font-family:'Amiri',serif;font-size:20px;margin-top:4px}
+
+.duas{display:grid;gap:12px}
+.dua{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--bg)}
+.dua h4{margin:0 0 8px;display:flex;justify-content:space-between}
+.dua p{font-family:'Amiri',serif;font-size:19px;line-height:1.9;margin:0}
+
+.quran-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.quran-toolbar input, .quran-toolbar select{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);min-width:160px;outline:none}
+.surah-list{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-height:60vh;overflow:auto;padding:2px}
+.surah-item{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:.2s}
+.surah-item:hover{border-color:var(--p);transform:translateY(-1px)}
+.surah-item b{font-size:15px} .surah-item small{color:var(--muted)}
+.quran-reader{font-family:'Amiri',serif;font-size:24px;line-height:2.1;text-align:justify;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:22px;max-height:70vh;overflow:auto}
+
+.history-row{display:flex;justify-content:space-between;padding:11px 3px;border-bottom:1px solid var(--line);gap:10px}
+.badge{padding:3px 9px;border-radius:20px;font-size:11px;background:var(--p-light);color:var(--p);font-weight:700}
+
+.auth{position:fixed;inset:0;background:#0008;display:none;place-items:center;padding:18px;z-index:50;backdrop-filter:blur(6px)}
+.auth.show{display:grid}.modal{width:min(430px,100%);background:var(--card);border-radius:22px;padding:25px;border:1px solid var(--line)}
+.modal input{width:100%;padding:13px;margin:9px 0 14px;border:1px solid var(--line);border-radius:12px;outline:none;background:var(--bg);color:var(--text)}
+.modal input:focus{border-color:var(--p)}.switch{display:flex;gap:8px;margin-bottom:16px}.switch button{flex:1;padding:10px;border-radius:10px;background:var(--bg);border:1px solid var(--line);color:var(--p)}.switch .sel{background:var(--p)!important;color:#fff!important;border-color:var(--p)}.msg{min-height:25px;color:#e11d48;font-size:13px}
+
+.notif{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--card);padding:12px 18px;border-radius:12px;z-index:60;display:none;box-shadow:var(--shadow)}
+
+@media(max-width:980px){.layout{grid-template-columns:1fr}.sidebar{position:static}.grid-prayers{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}.azkar-grid{grid-template-columns:1fr}.surah-list{grid-template-columns:1fr 1fr}.menu{flex-direction:row;overflow:auto;padding-bottom:6px}.menu button{white-space:nowrap;flex:0 0 auto}}
+@media(max-width:560px){.grid-prayers{grid-template-columns:1fr}.surah-list{grid-template-columns:1fr}.hero h1{font-size:28px}}
 </style>
 </head>
 <body>
-<header><div class="wrap nav"><div class="logo">☪ كن مع الله</div><div id="userArea"></div></div></header>
-<main class="wrap">
-<section class="hero"><h1>كن مع الله، <span>تطمئن القلوب</span></h1><p>تابع صلواتك يومًا بيوم، واحفظ تقدمك على جهازك بسهولة — بدون Firebase وبدون إعدادات معقدة.</p><button id="openBtn" class="btn" onclick="openAuth()">إنشاء حساب / دخول</button></section>
+<header>
+  <div class="wrap nav">
+    <div class="logo">☪ كن مع الله</div>
+    <div class="nav-actions">
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="وضع ليلي/نهاري">🌙</button>
+      <button class="icon-btn" id="notifBtn" onclick="toggleNotifSettings()" title="التنبيهات">🔔</button>
+      <div id="userArea"></div>
+    </div>
+  </div>
+</header>
 
-<div id="content" class="hidden">
-<section class="panel"><h2>🕌 إتمام الصلاة</h2><p>اختر حالتك لكل صلاة. الهدف هو المتابعة والتشجيع، وليس الحكم عليك.</p><div id="prayers" class="grid"></div></section>
-<section class="panel"><h2>📊 حساب اليوم</h2><div class="stats">
-<div class="stat"><b id="done">0</b>تمت الصلاة</div><div class="stat"><b>5</b>الصلوات</div><div class="stat"><b id="percent">0%</b>نسبة اليوم</div><div class="stat"><b id="streak">0</b>أيام متتالية</div>
-</div></section>
-<section class="panel"><h2>📅 سجل الأيام</h2><div id="history">لا يوجد سجل.</div></section>
-</div>
+<main class="wrap layout">
+  <aside class="sidebar">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <b>القائمة</b><span class="badge" id="todayBadge"></span>
+      </div>
+      <nav class="menu" id="sideMenu">
+        <button class="active" data-view="prayers" onclick="switchView('prayers')">🕌 الصلاة والمتابعة</button>
+        <button data-view="dashboard" onclick="switchView('dashboard')">📊 لوحة حسابي</button>
+        <button data-view="calendar" onclick="switchView('calendar')">📅 السجل والتقويم</button>
+        <button data-view="azkar" onclick="switchView('azkar')">📿 الأذكار والمسبحة</button>
+        <button data-view="duas" onclick="switchView('duas')">🤲 الأدعية</button>
+        <button data-view="quran" onclick="switchView('quran')">📖 القرآن الكريم</button>
+      </nav>
+    </div>
+
+    <div class="card" id="miniStats">
+      <b>📈 ملخص سريع</b>
+      <div class="stats" style="grid-template-columns:1fr 1fr;margin-top:12px">
+        <div class="stat"><b id="doneMini">0</b><small>اليوم</small></div>
+        <div class="stat"><b id="streakMini">0</b><small>متتالي</small></div>
+      </div>
+      <div id="prayerTimes" style="margin-top:12px;font-size:13px;color:var(--muted)"></div>
+    </div>
+
+    <div class="card" id="notifCard" style="display:none">
+      <b>🔔 تنبيهات الصلاة</b>
+      <p class="sub" style="font-size:13px">فعّل تنبيهات المتصفح لكل صلاة (تجريبية - تعمل والصفحة مفتوحة)</p>
+      <div style="display:grid;gap:8px" id="notifToggles"></div>
+      <button class="btn gray" style="width:100%;margin-top:10px" onclick="requestNotifPerm()">تفعيل إشعارات المتصفح</button>
+    </div>
+  </aside>
+
+  <section class="main">
+    <div class="hero" id="hero">
+      <h1>كن مع الله، <span>تطمئن القلوب</span></h1>
+      <p class="qibla" id="heroDate">﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾ — اليوم تابع صلواتك وأذكارك في مكان واحد</p>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button id="openBtn" class="btn" onclick="openAuth()">إنشاء حساب / دخول</button>
+        <button class="btn gray" onclick="switchView('azkar')">ابدأ التسبيح 📿</button>
+      </div>
+    </div>
+
+    <!-- Views -->
+    <div id="view-prayers" class="view active">
+      <div class="panel">
+        <h2>🕌 إتمام الصلاة اليوم</h2><p class="sub">اختر حالتك لكل صلاة. الهدف المتابعة والتشجيع، وليس الحكم عليك.</p>
+        <div id="prayers" class="grid-prayers"></div>
+      </div>
+      <div class="panel">
+        <h2>📊 حساب اليوم</h2>
+        <div class="stats">
+          <div class="stat"><b id="done">0</b><small>تمت الصلاة</small></div>
+          <div class="stat"><b>5</b><small>الصلوات</small></div>
+          <div class="stat"><b id="percent">0%</b><small>نسبة اليوم</small></div>
+          <div class="stat"><b id="streak">0</b><small>أيام متتالية</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-dashboard" class="view">
+      <div class="panel">
+        <h2>📊 لوحة حساب المستخدم</h2><p class="sub" id="dashboardUser">سجل دخولك لعرض بياناتك</p>
+        <div class="stats" id="dashboardStats"></div>
+        <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="card" style="box-shadow:none;background:var(--bg)"><b>🏆 أفضل يوم</b><div id="bestDay" style="margin-top:8px;color:var(--muted)">-</div></div>
+          <div class="card" style="box-shadow:none;background:var(--bg)"><b>📈 متوسط الأسبوع</b><div id="weekAvg" style="margin-top:8px;color:var(--muted)">-</div></div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn gray" onclick="exportData()">📤 تصدير البيانات</button>
+          <button class="btn gray" onclick="document.getElementById('importFile').click()">📥 استيراد</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+          <button class="btn red" onclick="clearCurrentData()">🗑️ مسح سجلّي</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-calendar" class="view">
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <h2>📅 سجل الأيام والتقويم الشهري</h2>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn gray" onclick="changeMonth(-1)">◀</button>
+            <b id="monthLabel"></b>
+            <button class="btn gray" onclick="changeMonth(1)">▶</button>
+          </div>
+        </div>
+        <div class="calendar" id="calendarGrid" style="margin-top:14px"></div>
+        <div style="margin-top:16px">
+          <h3 style="margin:0 0 8px">سجل مفصّل</h3>
+          <div id="history">لا يوجد سجل.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-azkar" class="view">
+      <div class="panel">
+        <h2>📿 الأذكار والمسبحة</h2><p class="sub">أذكار الصباح والمساء وتسبيح بعد الصلاة</p>
+        <div class="quran-toolbar">
+          <button class="btn gray" onclick="filterAzkar('all')">الكل</button>
+          <button class="btn gray" onclick="filterAzkar('morning')">أذكار الصباح</button>
+          <button class="btn gray" onclick="filterAzkar('evening')">أذكار المساء</button>
+          <button class="btn gray" onclick="filterAzkar('sleep')">أذكار النوم</button>
+          <button class="btn gray" onclick="filterAzkar('afterPrayer')">بعد الصلاة</button>
+        </div>
+        <div id="azkarList" class="azkar-grid"></div>
+      </div>
+      <div class="panel tasbih">
+        <h2>📿 المسبحة الإلكترونية</h2>
+        <div class="tasbih-ring" onclick="tasbihInc()"><div class="tasbih-inner"><div><div class="tasbih-num" id="tasbihCount">0</div><div class="tasbih-word" id="tasbihWord">سبحان الله</div></div></div></div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button class="btn gray" onclick="setTasbihWord('سبحان الله')">سبحان الله</button>
+          <button class="btn gray" onclick="setTasbihWord('الحمد لله')">الحمد لله</button>
+          <button class="btn gray" onclick="setTasbihWord('الله أكبر')">الله أكبر</button>
+          <button class="btn gray" onclick="setTasbihWord('لا إله إلا الله')">لا إله إلا الله</button>
+          <button class="btn gray" onclick="setTasbihWord('أستغفر الله')">أستغفر الله</button>
+          <button class="btn gray" onclick="setTasbihWord('الصلاة على النبي')">الصلاة على النبي</button>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+          <button class="btn" onclick="tasbihInc()">تسبيح</button>
+          <button class="btn gray" onclick="tasbihReset()">تصفير</button>
+        </div>
+        <small style="color:var(--muted);display:block;margin-top:10px">اضغط المساحة في الكيبورد للتسبيح بسرعة</small>
+      </div>
+    </div>
+
+    <div id="view-duas" class="view">
+      <div class="panel">
+        <h2>🤲 الأدعية</h2><p class="sub">أدعية مختارة من القرآن والسنة</p>
+        <div class="quran-toolbar">
+          <input id="duaSearch" placeholder="ابحث في الأدعية..." oninput="renderDuas()">
+          <select id="duaCat" onchange="renderDuas()"><option value="all">كل التصنيفات</option><option value="quran">من القرآن</option><option value="sunnah">من السنة</option><option value="daily">يومية</option><option value="hardship">الكرب والهم</option></select>
+        </div>
+        <div id="duasList" class="duas"></div>
+      </div>
+    </div>
+
+    <div id="view-quran" class="view">
+      <div class="panel">
+        <h2>📖 القرآن الكريم</h2><p class="sub">اختر سورة للقراءة - النص محفوظ محليًا للسور القصيرة، ويمكنك البحث</p>
+        <div class="quran-toolbar">
+          <input id="surahSearch" placeholder="ابحث عن سورة..." oninput="renderSurahs()">
+          <button class="btn gray" onclick="toggleQuranFont()">تكبير/تصغير الخط</button>
+          <button class="btn gray" onclick="quranLastRead()">آخر قراءة: <span id="lastReadLabel">-</span></button>
+        </div>
+        <div id="surahList" class="surah-list"></div>
+        <div id="quranReaderWrap" style="display:none;margin-top:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <b id="currentSurahName"></b><button class="btn gray" onclick="closeReader()">إغلاق</button>
+          </div>
+          <div id="quranReader" class="quran-reader"></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
 </main>
-<footer>© 2026 كن مع الله</footer>
+
+<footer style="text-align:center;color:var(--muted);padding:25px">© 2026 كن مع الله — صمم بعناية لذكر الله</footer>
 
 <div id="auth" class="auth"><div class="modal">
-<div class="switch"><button id="loginTab" class="sel" onclick="mode('login')">دخول</button><button id="signupTab" onclick="mode('signup')">إنشاء حساب</button></div>
-<div id="loginBox"><h2>تسجيل الدخول</h2><input id="lu" placeholder="اسم المستخدم"><input id="lp" type="password" placeholder="كلمة السر"><button class="btn" style="width:100%" onclick="login()">دخول</button></div>
-<div id="signupBox" class="hidden"><h2>إنشاء حساب</h2><input id="su" placeholder="اسم المستخدم"><input id="sp" type="password" placeholder="كلمة السر"><button class="btn" style="width:100%" onclick="signup()">إنشاء الحساب</button></div>
-<div id="msg" class="msg"></div><button class="btn gray" onclick="closeAuth()">إغلاق</button>
+  <div class="switch"><button id="loginTab" class="sel" onclick="mode('login')">دخول</button><button id="signupTab" onclick="mode('signup')">إنشاء حساب</button></div>
+  <div id="loginBox"><h2>تسجيل الدخول</h2><input id="lu" placeholder="اسم المستخدم"><input id="lp" type="password" placeholder="كلمة السر"><button class="btn" style="width:100%" onclick="login()">دخول</button></div>
+  <div id="signupBox" style="display:none"><h2>إنشاء حساب</h2><input id="su" placeholder="اسم المستخدم"><input id="sp" type="password" placeholder="كلمة السر"><button class="btn" style="width:100%" onclick="signup()">إنشاء الحساب</button></div>
+  <div id="msg" class="msg"></div><button class="btn gray" style="width:100%" onclick="closeAuth()">إغلاق</button>
 </div></div>
 
+<div id="toast" class="notif"></div>
+
 <script>
+/* ===== Core storage ===== */
 const prayers=["الفجر","الظهر","العصر","المغرب","العشاء"];
-let current=null,data={};
-const keyUsers="kan_users_v1",keySession="kan_session_v1";
+const keyUsers="kan_users_v1", keySession="kan_session_v1", keyTheme="kan_theme", keyTasbih="kan_tasbih", keyNotif="kan_notif", keyLastSurah="kan_last_surah", keyQFont="kan_q_font";
+let current=null,data={},curMonth=new Date();
+let tasbih={word:"سبحان الله",count:0,total:0};
 const users=()=>JSON.parse(localStorage.getItem(keyUsers)||"{}");
 const saveUsers=u=>localStorage.setItem(keyUsers,JSON.stringify(u));
 const day=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const esc=s=>String(s).replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]));
-function openAuth(){document.getElementById("auth").classList.add("show");mode("login")}
-function closeAuth(){document.getElementById("auth").classList.remove("show");document.getElementById("msg").textContent=""}
-function mode(x){document.getElementById("loginBox").classList.toggle("hidden",x!=="login");document.getElementById("signupBox").classList.toggle("hidden",x!=="signup");document.getElementById("loginTab").classList.toggle("sel",x==="login");document.getElementById("signupTab").classList.toggle("sel",x==="signup");document.getElementById("msg").textContent=""}
-function passHash(p){let h=2166136261;for(let i=0;i<p.length;i++){h^=p.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
-function signup(){
- const u=document.getElementById("su").value.trim(),p=document.getElementById("sp").value;
- if(!/^[A-Za-z0-9_]{3,20}$/.test(u))return msg("اسم المستخدم: إنجليزي/أرقام/ _ من 3 إلى 20 حرفًا.");
- if(p.length<6)return msg("كلمة السر يجب أن تكون 6 أحرف على الأقل.");
- let all=users(),id=u.toLowerCase();
- if(all[id])return msg("اسم المستخدم مستخدم بالفعل.");
- all[id]={username:u,pass:passHash(p),created:Date.now(),prayers:{}};
- saveUsers(all);current=id;localStorage.setItem(keySession,id);closeAuth();render();
-}
-function login(){
- const u=document.getElementById("lu").value.trim(),p=document.getElementById("lp").value,all=users(),id=u.toLowerCase();
- if(!all[id]||all[id].pass!==passHash(p))return msg("اسم المستخدم أو كلمة السر غير صحيحة.");
- current=id;localStorage.setItem(keySession,id);closeAuth();render();
-}
-function msg(t){document.getElementById("msg").textContent=t}
-function logout(){current=null;localStorage.removeItem(keySession);document.getElementById("content").classList.add("hidden");document.getElementById("openBtn").classList.remove("hidden");document.getElementById("userArea").innerHTML=""}
-function render(){
- const all=users(),u=all[current];if(!u)return logout();
- document.getElementById("content").classList.remove("hidden");document.getElementById("openBtn").classList.add("hidden");
- document.getElementById("userArea").innerHTML=`مرحبًا <b>${esc(u.username)}</b> <button class="btn red" onclick="logout()">خروج</button>`;
- data=u.prayers[day()]||{};renderPrayers();stats();history();
-}
-function renderPrayers(){
- document.getElementById("prayers").innerHTML=prayers.map(p=>{let v=data[p]||"";
- let text=v==="done"?"تمت الصلاة":v==="missed"?"فاتتني":v==="lazy"?"غلبني الكسل":"لم تُسجل";
- return `<div class="prayer"><h3>${p}</h3><div class="state">${text}</div>
- <button class="${v==="done"?"active ok":""}" onclick="setPrayer('${p}','done')">✅ صليت</button>
- <button class="${v==="missed"?"active no":""}" onclick="setPrayer('${p}','missed')">❌ فاتتني</button>
- <button class="${v==="lazy"?"active lazy":""}" onclick="setPrayer('${p}','lazy')">😔 غلبني الكسل</button></div>`}).join("");
-}
-function setPrayer(p,v){let all=users();all[current].prayers[day()]={...(all[current].prayers[day()]||{}),[p]:v};saveUsers(all);data=all[current].prayers[day()];renderPrayers();stats();history()}
-function stats(){let n=prayers.filter(p=>data[p]==="done").length;document.getElementById("done").textContent=n;document.getElementById("percent").textContent=Math.round(n/5*100)+"%"}
-function history(){
- const all=users()[current].prayers||{},dates=Object.keys(all).sort().reverse(),box=document.getElementById("history");
- if(!dates.length){box.textContent="لا يوجد سجل.";document.getElementById("streak").textContent=0;return}
- box.innerHTML=dates.slice(0,60).map(d=>{let n=prayers.filter(p=>all[d][p]==="done").length;return `<div class="history-row"><span>${d}</span><b>${n}/5 (${Math.round(n/5*100)}%)</b></div>`}).join("");
- let streak=0,dt=new Date();
- while(true){let k=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");if(all[k]&&prayers.every(p=>all[k][p]==="done")){streak++;dt.setDate(dt.getDate()-1)}else break}
- document.getElementById("streak").textContent=streak;
-}
-(function(){let s=localStorage.getItem(keySession);if(s&&users()[s]){current=s;render()}})();
-</script>
-</body>
-</html>
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";setTimeout(

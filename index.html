@@ -498,17 +498,28 @@
         <button class="nav-item" onclick="showPage('guidePage')">
             <span>📖</span>الدليل
         </button>
+ 
     </nav>
-
-    <script>
+     <script>
         // --- Data & State Storage ---
         const prayers = ['الفجر', 'الظهر', 'العصر', 'المغرب', 'العشاء'];
-        let appData = JSON.parse(localStorage.getItem('konWithAllahData')) || {
+        
+        let appData = {
             user: 'زائر',
             theme: 'light',
-            prayersHistory: {}, // format: {"2026-09-01": {الفجر: "done", ...}}
+            prayersHistory: {},
             counter: 0
         };
+
+        // تحميل البيانات بأمان مع حماية من الأخطاء
+        try {
+            const saved = localStorage.getItem('konWithAllahData');
+            if (saved) {
+                appData = Object.assign(appData, JSON.parse(saved));
+            }
+        } catch(e) {
+            console.error("خطأ في تحميل localStorage", e);
+        }
 
         const azkarData = {
             sabah: [
@@ -531,24 +542,219 @@
 
         // --- Core Functions ---
         function initApp() {
-            applyTheme(appData.theme);
+            applyTheme(appData.theme || 'light');
             renderPrayers();
             updateStats();
-            document.getElementById('counterVal').innerText = appData.counter || 0;
-            if(appData.user) document.getElementById('usernameInput').value = appData.user;
+            
+            const counterEl = document.getElementById('counterVal');
+            if (counterEl) counterEl.innerText = appData.counter || 0;
+            
+            const userEl = document.getElementById('usernameInput');
+            if (userEl && appData.user) userEl.value = appData.user;
+            
+            filterDuaa();
         }
 
         function saveData() {
-            localStorage.setItem('konWithAllahData', JSON.stringify(appData));
+            try {
+                localStorage.setItem('konWithAllahData', JSON.stringify(appData));
+            } catch(e) {
+                console.error("خطأ في حفظ البيانات", e);
+            }
         }
 
         // Navigation
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) targetPage.classList.add('active');
             
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            appData.counter
-              </script>
+            const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(b => {
+                const attr = b.getAttribute('onclick');
+                return attr && attr.includes(pageId);
+            });
+            if (activeNav) activeNav.classList.add('active');
+
+            if (pageId === 'statsPage') renderHistoryTable();
+        }
+
+        // Dark Mode Toggle
+        function toggleTheme() {
+            appData.theme = appData.theme === 'light' ? 'dark' : 'light';
+            applyTheme(appData.theme);
+            saveData();
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.innerText = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // --- Prayer Tracker ---
+        function getTodayKey() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function renderPrayers() {
+            const today = getTodayKey();
+            if (!appData.prayersHistory) appData.prayersHistory = {};
+            if (!appData.prayersHistory[today]) appData.prayersHistory[today] = {};
+
+            const container = document.getElementById('prayersList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            prayers.forEach(p => {
+                const status = appData.prayersHistory[today][p] || '';
+                const div = document.createElement('div');
+                div.className = 'prayer-item';
+                div.innerHTML = `
+                    <span><b>${p}</b></span>
+                    <div class="prayer-btns">
+                        <button class="btn-status ${status === 'done' ? 'done' : ''}" onclick="setPrayerStatus('${p}', 'done')">✅ صليت</button>
+                        <button class="btn-status ${status === 'missed' ? 'missed' : ''}" onclick="setPrayerStatus('${p}', 'missed')">❌ فاتتني</button>
+                        <button class="btn-status ${status === 'lazy' ? 'lazy' : ''}" onclick="setPrayerStatus('${p}', 'lazy')">😔 كسل</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            updateTodaySummary();
+        }
+
+        function setPrayerStatus(prayer, status) {
+            const today = getTodayKey();
+            if (!appData.prayersHistory[today]) appData.prayersHistory[today] = {};
+            appData.prayersHistory[today][prayer] = status;
+            saveData();
+            renderPrayers();
+            updateStats();
+        }
+
+        function updateTodaySummary() {
+            const today = getTodayKey();
+            const todayData = (appData.prayersHistory && appData.prayersHistory[today]) || {};
+            let count = 0;
+            prayers.forEach(p => { if (todayData[p] === 'done') count++; });
+            
+            const percentage = Math.round((count / 5) * 100);
+            const summaryEl = document.getElementById('todaySummary');
+            const ratioEl = document.getElementById('homeTodayRatio');
+            
+            if (summaryEl) summaryEl.innerText = `أتممت ${count} من 5 صلوات — ${percentage}%`;
+            if (ratioEl) ratioEl.innerText = `${count} / 5`;
+        }
+
+        // --- Stats & History ---
+        function updateStats() {
+            let streak = 0;
+            if (!appData.prayersHistory) return;
+            const dates = Object.keys(appData.prayersHistory).sort().reverse();
+            
+            for (let d of dates) {
+                let doneCount = 0;
+                prayers.forEach(p => { if (appData.prayersHistory[d][p] === 'done') doneCount++; });
+                if (doneCount === 5) streak++;
+                else break;
+            }
+
+            const homeStreakEl = document.getElementById('homeStreak');
+            const statsStreakEl = document.getElementById('statsStreak');
+            
+            if (homeStreakEl) homeStreakEl.innerText = streak;
+            if (statsStreakEl) statsStreakEl.innerText = `${streak} أيام`;
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (!appData.prayersHistory) return;
+            const dates = Object.keys(appData.prayersHistory).sort().reverse();
+
+            dates.forEach(d => {
+                let count = 0;
+                prayers.forEach(p => { if (appData.prayersHistory[d][p] === 'done') count++; });
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${d}</td>
+                    <td>${count} / 5</td>
+                    <td>${Math.round((count/5)*100)}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- Counter (المسبحة) ---
+        function incrementCounter() {
+            appData.counter = (appData.counter || 0) + 1;
+            const counterEl = document.getElementById('counterVal');
+            if (counterEl) counterEl.innerText = appData.counter;
+            saveData();
+        }
+
+        function resetCounter() {
+            appData.counter = 0;
+            const counterEl = document.getElementById('counterVal');
+            if (counterEl) counterEl.innerText = 0;
+            saveData();
+        }
+
+        // --- Azkar ---
+        function loadAzkar(type) {
+            const container = document.getElementById('azkarContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (!azkarData[type]) return;
+            azkarData[type].forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.margin = '10px 0';
+                card.innerHTML = `
+                    <p style="font-size:1.1rem; line-height:1.6;">${item.text}</p>
+                    <div style="margin-top:10px; font-size:0.85rem; color:var(--text-secondary);">التكرار: ${item.count}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- Duaa ---
+        function filterDuaa() {
+            const catEl = document.getElementById('duaaCategory');
+            const container = document.getElementById('duaaContainer');
+            if (!container || !catEl) return;
+            
+            const cat = catEl.value;
+            container.innerHTML = '';
+
+            const list = cat === 'all' ? duaaData : duaaData.filter(d => d.cat === cat);
+            list.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.margin = '10px 0';
+                card.innerHTML = `<p style="font-size:1.1rem;">${item.text}</p>`;
+                container.appendChild(card);
+            });
+        }
+
+        // --- User Save ---
+        function saveUser() {
+            const input = document.getElementById('usernameInput');
+            if (input && input.value) {
+                appData.user = input.value;
+                saveData();
+                alert('تم حفظ البيانات بنجاح!');
+            }
+        }
+
+        // التشغيل عند التنسيق والتأكد من تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+        });
+    </script>
 </body>
 </html>
+

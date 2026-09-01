@@ -309,3 +309,302 @@ const saveUsers=u=>localStorage.setItem(keyUsers,JSON.stringify(u));
 const day=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const esc=s=>String(s).replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[x]));
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";setTimeout(
+  ===== */
+function applyTheme(){
+  const th=localStorage.getItem(keyTheme)||"light";
+  document.documentElement.classList.toggle("dark",th==="dark");
+  document.body.classList.toggle("dark",th==="dark");
+  document.getElementById("themeBtn").textContent= th==="dark" ? "☀️" : "🌙";
+}
+function toggleTheme(){
+  const cur=localStorage.getItem(keyTheme)||"light";
+  localStorage.setItem(keyTheme, cur==="dark"?"light":"dark"); applyTheme();
+}
+applyTheme();
+
+/* ===== Auth ===== */
+function openAuth(){document.getElementById("auth").classList.add("show");mode("login")}
+function closeAuth(){document.getElementById("auth").classList.remove("show");document.getElementById("msg").textContent=""}
+function mode(x){
+  document.getElementById("loginBox").style.display= x==="login"?"block":"none";
+  document.getElementById("signupBox").style.display= x==="signup"?"block":"none";
+  document.getElementById("loginTab").classList.toggle("sel",x==="login");
+  document.getElementById("signupTab").classList.toggle("sel",x==="signup");
+  document.getElementById("msg").textContent=""
+}
+function passHash(p){let h=2166136261;for(let i=0;i<p.length;i++){h^=p.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
+function msg(t){document.getElementById("msg").textContent=t}
+function signup(){
+ const u=document.getElementById("su").value.trim(),p=document.getElementById("sp").value;
+ if(!/^[A-Za-z0-9_]{3,20}$/.test(u))return msg("اسم المستخدم: إنجليزي/أرقام/ _ من 3 إلى 20 حرفًا.");
+ if(p.length<6)return msg("كلمة السر يجب أن تكون 6 أحرف على الأقل.");
+ let all=users(),id=u.toLowerCase();
+ if(all[id])return msg("اسم المستخدم مستخدم بالفعل.");
+ all[id]={username:u,pass:passHash(p),created:Date.now(),prayers:{}};
+ saveUsers(all);current=id;localStorage.setItem(keySession,id);closeAuth();render();toast("تم إنشاء الحساب بنجاح");
+}
+function login(){
+ const u=document.getElementById("lu").value.trim(),p=document.getElementById("lp").value,all=users(),id=u.toLowerCase();
+ if(!all[id]||all[id].pass!==passHash(p))return msg("اسم المستخدم أو كلمة السر غير صحيحة.");
+ current=id;localStorage.setItem(keySession,id);closeAuth();render();toast("مرحباً بعودتك "+all[id].username);
+}
+function logout(){current=null;localStorage.removeItem(keySession);document.getElementById("userArea").innerHTML="";document.getElementById("openBtn").style.display="";document.getElementById("content")?.classList?.add("hidden");location.reload()}
+
+/* ===== Navigation ===== */
+function switchView(v){
+  document.querySelectorAll(".view").forEach(e=>e.classList.remove("active"));
+  document.getElementById("view-"+v)?.classList.add("active");
+  document.querySelectorAll("#sideMenu button").forEach(b=>b.classList.toggle("active",b.dataset.view===v));
+  if(v==="dashboard") renderDashboard();
+  if(v==="calendar") renderCalendar();
+  if(v==="azkar") renderAzkar();
+  if(v==="duas") renderDuas();
+  if(v==="quran") renderSurahs();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ===== Prayer Tracking ===== */
+function renderPrayers(){
+ document.getElementById("prayers").innerHTML=prayers.map(p=>{let v=data[p]||"";
+ let text=v==="done"?"تمت الصلاة":v==="missed"?"فاتتني":v==="lazy"?"غلبني الكسل":"لم تُسجل";
+ return `<div class="prayer ${v==="done"?"done-card":""}"><h3>${p}</h3><div class="state">${text}</div>
+ <button class="ok ${v==="done"?"active":""}" onclick="setPrayer('${p}','done')">✅ صليت</button>
+ <button class="no ${v==="missed"?"active":""}" onclick="setPrayer('${p}','missed')">❌ فاتتني</button>
+ <button class="lazy ${v==="lazy"?"active":""}" onclick="setPrayer('${p}','lazy')">😔 غلبني الكسل</button></div>`}).join("");
+}
+function setPrayer(p,v){
+  if(!current){openAuth();return}
+  let all=users(); all[current].prayers[day()]={...(all[current].prayers[day()]||{}),[p]:v}; saveUsers(all);
+  data=all[current].prayers[day()]; renderPrayers(); stats(); renderCalendar(); renderDashboard(); toast(p+" : "+(v==="done"?"أحسنت! بارك الله فيك":"تم الحفظ"))
+}
+function stats(){
+  let n=prayers.filter(p=>data[p]==="done").length;
+  document.getElementById("done").textContent=n;
+  document.getElementById("doneMini").textContent=n;
+  document.getElementById("percent").textContent=Math.round(n/5*100)+"%";
+  const streak=calcStreak(); document.getElementById("streak").textContent=streak; document.getElementById("streakMini").textContent=streak;
+}
+function calcStreak(){
+  if(!current) return 0;
+  const all=users()[current]?.prayers||{}; let streak=0,dt=new Date();
+  while(true){let k=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0"); if(all[k]&&prayers.every(p=>all[k][p]==="done")){streak++;dt.setDate(dt.getDate()-1)} else break}
+  return streak;
+}
+
+/* ===== Calendar & History ===== */
+let calFilter=null;
+function renderCalendar(){
+  const label=document.getElementById("monthLabel"); if(!label) return;
+  const y=curMonth.getFullYear(), m=curMonth.getMonth();
+  label.textContent=curMonth.toLocaleDateString("ar-EG",{month:"long",year:"numeric"});
+  const grid=document.getElementById("calendarGrid");
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const startDay=new Date(y,m,1).getDay();
+  const all=current?users()[current].prayers||{}:{};
+  let html=['<div class="cal-head">ح</div>','<div class="cal-head">ن</div>','<div class="cal-head">ث</div>','<div class="cal-head">ر</div>','<div class="cal-head">خ</div>','<div class="cal-head">ج</div>','<div class="cal-head">س</div>'];
+  // Saturday start correction (JS Sunday=0)
+  const offset=(startDay+1)%7;
+  for(let i=0;i<offset;i++) html.push('<div></div>');
+  const todayStr=day();
+  for(let d=1;d<=daysInMonth;d++){
+    const k=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+    const rec=all[k]; let cls="cal-day", title="";
+    if(rec){ const cnt=prayers.filter(p=>rec[p]==="done").length; title=cnt+"/5"; if(cnt===5) cls+=" perfect"; else if(cnt>0) cls+=" partial"; cls+=" has-data"; }
+    if(k===todayStr) cls+=" today";
+    html.push(`<div class="${cls}" onclick="openDay('${k}')" title="${title}"><span>${d}</span>${all[k]?'<span class="dot"></span>':''}</div>`);
+  }
+  grid.innerHTML=html.join("");
+  // history
+  const box=document.getElementById("history");
+  const dates=Object.keys(all).sort().reverse();
+  if(!dates.length){box.textContent="لا يوجد سجل.";return}
+  const filtered=calFilter?dates.filter(d=>d===calFilter):dates;
+  box.innerHTML=filtered.slice(0,80).map(d=>{let n=prayers.filter(p=>all[d][p]==="done").length; return `<div class="history-row"><span>${d} ${d===todayStr?'<span class="badge">اليوم</span>':''}</span><b>${n}/5 (${Math.round(n/5*100)}%)</b></div>`}).join("");
+  if(calFilter){box.innerHTML+=`<button class="btn gray" style="margin-top:10px" onclick="calFilter=null;renderCalendar()">عرض كل الأيام</button>`}
+}
+function openDay(k){calFilter=k;renderCalendar();toast("عرض يوم "+k)}
+function changeMonth(delta){curMonth.setMonth(curMonth.getMonth()+delta);renderCalendar()}
+
+/* ===== Dashboard ===== */
+function renderDashboard(){
+  if(!current){document.getElementById("dashboardUser").textContent="سجل دخولك لعرض بياناتك";return}
+  const all=users()[current]; document.getElementById("dashboardUser").textContent=`مرحباً ${all.username} — عضو منذ ${new Date(all.created).toLocaleDateString("ar-EG")}`;
+  const prayersData=all.prayers||{}; const dates=Object.keys(prayersData);
+  let totalDone=0, perfect=0;
+  dates.forEach(d=>{let c=prayers.filter(p=>prayersData[d][p]==="done").length; totalDone+=c; if(c===5) perfect++;});
+  const avg=dates.length? Math.round(totalDone/(dates.length*5)*100):0;
+  const last7=dates.sort().reverse().slice(0,7); let w=0; last7.forEach(d=>w+=prayers.filter(p=>prayersData[d][p]==="done").length);
+  document.getElementById("dashboardStats").innerHTML=`
+    <div class="stat"><b>${dates.length}</b><small>يوم مسجل</small></div>
+    <div class="stat"><b>${perfect}</b><small>يوم كامل 5/5</small></div>
+    <div class="stat"><b>${totalDone}</b><small>صلاة مؤداة</small></div>
+    <div class="stat"><b>${avg}%</b><small>متوسط عام</small></div>`;
+  document.getElementById("bestDay").textContent= perfect>0? `${perfect} أيام كاملة - أحسنت!` : "لم تكتمل 5 صلوات بعد، استمر!";
+  document.getElementById("weekAvg").textContent= last7.length? `${Math.round(w/(last7.length*5)*100)}% في آخر ${last7.length} أيام` : "-";
+}
+
+/* ===== Azkar & Tasbih ===== */
+const AZKAR=[
+  {t:"أذكار الصباح",cat:"morning",text:"أصبحنا وأصبح الملك لله، والحمد لله، لا إله إلا الله وحده لا شريك له",count:1},
+  {t:"آية الكرسي",cat:"morning",text:"اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ...",count:1},
+  {t:"سورة الإخلاص",cat:"morning",text:"قُلْ هُوَ اللَّهُ أَحَدٌ",count:3},
+  {t:"سبحان الله وبحمده",cat:"morning",text:"سبحان الله وبحمده",count:100},
+  {t:"أذكار المساء",cat:"evening",text:"أمسينا وأمسى الملك لله، والحمد لله، لا إله إلا الله وحده لا شريك له",count:1},
+  {t:"اللهم بك أمسينا",cat:"evening",text:"اللهم بك أمسينا وبك أصبحنا وبك نحيا وبك نموت وإليك المصير",count:1},
+  {t:"بعد الصلاة - الاستغفار",cat:"afterPrayer",text:"أستغفر الله، أستغفر الله، أستغفر الله",count:3},
+  {t:"بعد الصلاة - التسبيح",cat:"afterPrayer",text:"سبحان الله (33) الحمد لله (33) الله أكبر (33) ثم تمام المئة لا إله إلا الله",count:33},
+  {t:"أذكار النوم",cat:"sleep",text:"باسمك اللهم أموت وأحيا",count:1},
+  {t:"دعاء النوم",cat:"sleep",text:"اللهم قني عذابك يوم تبعث عبادك",count:3},
+];
+let azkarFilter="all", azkarCounts={};
+function filterAzkar(c){azkarFilter=c;renderAzkar()}
+function renderAzkar(){
+  const list=document.getElementById("azkarList"); if(!list) return;
+  let data=AZKAR.filter(a=> azkarFilter==="all"||a.cat===azkarFilter);
+  list.innerHTML=data.map((a,i)=>{const k=a.t; const cur=azkarCounts[k]||0; return `<div class="zekr"><h4>${a.t} <span class="badge">${a.cat}</span></h4><p>${a.text}</p><div class="meta"><small>العدد: ${a.count}</small><div class="counter"><span>${cur}/${a.count}</span><button class="btn gray" onclick="incZekr('${esc(a.t)}')">ذكر</button></div></div></div>`}).join("");
+}
+function incZekr(t){
+  const key=decodeURIComponent(t.replace(/&#039;/g,"'"));
+  // reverse esc? simplified use t directly
+  const real=Object.keys(azkarCounts).find? t : t;
+  // find original name
+  const name=AZKAR.find(a=>esc(a.t)===t)?.t || t;
+  azkarCounts[name]=(azkarCounts[name]||0)+1;
+  const need=AZKAR.find(a=>a.t===name)?.count||1;
+  if(azkarCounts[name]>=need){toast("أحسنت! أتممت "+name); azkarCounts[name]=0}
+  renderAzkar();
+}
+// tasbih
+function loadTasbih(){try{const v=JSON.parse(localStorage.getItem(keyTasbih)||"null"); if(v) tasbih=v;}catch{}
+  document.getElementById("tasbihCount").textContent=tasbih.count; document.getElementById("tasbihWord").textContent=tasbih.word;
+}
+function saveTasbih(){localStorage.setItem(keyTasbih,JSON.stringify(tasbih))}
+function tasbihInc(){tasbih.count++;tasbih.total++;document.getElementById("tasbihCount").textContent=tasbih.count;saveTasbih();if(tasbih.count%33===0) toast("33 تسبيحة - تقبل الله")}
+function tasbihReset(){tasbih.count=0;document.getElementById("tasbihCount").textContent=0;saveTasbih()}
+function setTasbihWord(w){tasbih.word=w;document.getElementById("tasbihWord").textContent=w;saveTasbih()}
+document.addEventListener("keydown",e=>{if(e.code==="Space" && document.getElementById("view-azkar").classList.contains("active")){e.preventDefault();tasbihInc()}});
+
+/* ===== Duas ===== */
+const DUAS=[
+  {title:"دعاء الهم والحزن",cat:"hardship",text:"اللهم إني عبدك ابن عبدك ابن أمتك، ناصيتي بيدك، ماضٍ فيَّ حكمك، عدلٌ فيَّ قضاؤك، أسألك بكل اسم هو لك..."},
+  {title:"سيد الاستغفار",cat:"sunnah",text:"اللهم أنت ربي لا إله إلا أنت خلقتني وأنا عبدك وأنا على عهدك ووعدك ما استطعت، أعوذ بك من شر ما صنعت..."},
+  {title:"دعاء من القرآن - ربنا آتنا",cat:"quran",text:"رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ"},
+  {title:"دعاء الصباح",cat:"daily",text:"اللهم إني أسألك علماً نافعاً، ورزقاً طيباً، وعملاً متقبلاً"},
+  {title:"دعاء دخول المنزل",cat:"daily",text:"بسم الله ولجنا، وبسم الله خرجنا، وعلى ربنا توكلنا"},
+  {title:"دعاء للمريض",cat:"hardship",text:"اللهم رب الناس أذهب البأس، اشفِ أنت الشافي لا شفاء إلا شفاؤك"},
+  {title:"دعاء الرزق",cat:"daily",text:"اللهم اكفني بحلالك عن حرامك، وأغنني بفضلك عمن سواك"},
+  {title:"دعاء من القرآن - لا إله إلا أنت سبحانك",cat:"quran",text:"لَا إِلَٰهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِينَ"},
+];
+function renderDuas(){
+  const q=(document.getElementById("duaSearch")?.value||"").toLowerCase();
+  const cat=document.getElementById("duaCat")?.value||"all";
+  let list=DUAS.filter(d=>(cat==="all"||d.cat===cat) && (d.title.toLowerCase().includes(q)||d.text.toLowerCase().includes(q)));
+  document.getElementById("duasList").innerHTML=list.map(d=>`<div class="dua"><h4>${d.title} <span class="badge">${d.cat}</span> <button class="btn gray" style="padding:4px 10px;font-size:12px" onclick="copyText('${esc(d.text)}')">نسخ</button></h4><p>${d.text}</p></div>`).join("") || "<p style='color:var(--muted)'>لا توجد نتائج</p>";
+}
+function copyText(t){navigator.clipboard.writeText(t.replace(/&#039;/g,"'"));toast("تم النسخ")}
+
+/* ===== Quran ===== */
+const SURAHS=[
+  {id:1,name:"الفاتحة",aya:7,txt:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ (1) الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ (2) الرَّحْمَٰنِ الرَّحِيمِ (3) مَالِكِ يَوْمِ الدِّينِ (4) إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ (5) اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ (6) صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ (7)"},
+  {id:112,name:"الإخلاص",aya:4,txt:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ قُلْ هُوَ اللَّهُ أَحَدٌ (1) اللَّهُ الصَّمَدُ (2) لَمْ يَلِدْ وَلَمْ يُولَدْ (3) وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ (4)"},
+  {id:113,name:"الفلق",aya:5,txt:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ (1) مِن شَرِّ مَا خَلَقَ (2) وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ (3) وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ (4) وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ (5)"},
+  {id:114,name:"الناس",aya:6,txt:"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ قُلْ أَعُوذُ بِرَبِّ النَّاسِ (1) مَلِكِ النَّاسِ (2) إِلَٰهِ النَّاسِ (3) مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ (4) الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ (5) مِنَ الْجِنَّةِ وَالنَّاسِ (6)"},
+  {id:2,name:"البقرة",aya:286,txt:"سورة البقرة - اضغط للقراءة عبر مصحف خارجي أو احفظها للقراءة لاحقاً. (النص الكامل متاح عبر الإنترنت)"},
+  {id:36,name:"يس",aya:83,txt:"يس (1) وَالْقُرْآنِ الْحَكِيمِ (2) إِنَّكَ لَمِنَ الْمُرْسَلِينَ (3) عَلَىٰ صِرَاطٍ مُّسْتَقِيمٍ (4) ..."},
+];
+for(let i=4;i<=114;i++){ if(!SURAHS.find(s=>s.id===i)) SURAHS.push({id:i,name:`سورة ${i}`,aya:"-",txt:`سورة رقم ${i} - يمكنك فتحها في مصحف خارجي أو إضافة النص لاحقاً`})}
+SURAHS.sort((a,b)=>a.id-b.id);
+function renderSurahs(){
+  const q=(document.getElementById("surahSearch")?.value||"").toLowerCase();
+  let list=SURAHS.filter(s=>s.name.includes(q)||String(s.id).includes(q));
+  document.getElementById("surahList").innerHTML=list.slice(0,100).map(s=>`<div class="surah-item" onclick="openSurah(${s.id})"><div><b>${s.id}. ${s.name}</b><br><small>${s.aya} آيات</small></div><span>📖</span></div>`).join("");
+  const last=localStorage.getItem(keyLastSurah); if(last){document.getElementById("lastReadLabel").textContent=SURAHS.find(x=>x.id==last)?.name||last}
+}
+function openSurah(id){
+  const s=SURAHS.find(x=>x.id===id); if(!s) return;
+  document.getElementById("currentSurahName").textContent=s.name;
+  document.getElementById("quranReader").textContent=s.txt;
+  document.getElementById("quranReaderWrap").style.display="block";
+  localStorage.setItem(keyLastSurah,id); document.getElementById("lastReadLabel").textContent=s.name;
+  document.getElementById("quranReader").scrollTop=0;
+}
+function closeReader(){document.getElementById("quranReaderWrap").style.display="none"}
+function quranLastRead(){const id=localStorage.getItem(keyLastSurah); if(id) openSurah(parseInt(id)); else toast("لا توجد قراءة سابقة")}
+function toggleQuranFont(){
+  const r=document.getElementById("quranReader");
+  let sz=parseInt(localStorage.getItem(keyQFont)||"24");
+  sz= sz>=36 ? 20 : sz+4;
+  localStorage.setItem(keyQFont,sz); r.style.fontSize=sz+"px"; toast("حجم الخط "+sz);
+}
+
+/* ===== Notifications (Prayer) ===== */
+let notifEnabled=JSON.parse(localStorage.getItem(keyNotif)||'{"Fajr":false,"Dhuhr":false,"Asr":false,"Maghrib":false,"Isha":false}');
+function toggleNotifSettings(){
+  const card=document.getElementById("notifCard");
+  card.style.display= card.style.display==="none" ? "block" : "none";
+  renderNotifToggles();
+}
+function renderNotifToggles(){
+  const box=document.getElementById("notifToggles");
+  box.innerHTML=prayers.map((p,i)=>{
+    const keys=["Fajr","Dhuhr","Asr","Maghrib","Isha"]; const k=keys[i];
+    return `<label style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);padding:10px;border-radius:10px;border:1px solid var(--line)"><span>${p}</span><input type="checkbox" ${notifEnabled[k]?"checked":""} onchange="toggleOneNotif('${k}',this.checked)"></label>`
+  }).join("");
+}
+function toggleOneNotif(k,v){notifEnabled[k]=v; localStorage.setItem(keyNotif,JSON.stringify(notifEnabled)); toast(v?"تم تفعيل تنبيه "+k:"تم إلغاء تنبيه "+k)}
+function requestNotifPerm(){
+  if(!("Notification" in window)) return toast("المتصفح لا يدعم الإشعارات");
+  Notification.requestPermission().then(p=>{ if(p==="granted") toast("تم تفعيل الإشعارات ✅"); else toast("لم يتم السماح بالإشعارات")});
+}
+// simple scheduler: checks every minute if prayer time matches (using approximate static times for demo)
+const staticTimes={Fajr:"05:00",Dhuhr:"12:10",Asr:"15:30",Maghrib:"18:05",Isha:"19:30"};
+function checkPrayerNotif(){
+  if(Notification.permission!=="granted") return;
+  const now=new Date(); const hhmm=String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
+  Object.entries(staticTimes).forEach(([k,t])=>{
+    if(t===hhmm && notifEnabled[k]){ new Notification("حان وقت "+k, {body:"قم إلى الصلاة - كن مع الله"}); }
+  });
+}
+setInterval(checkPrayerNotif,60000);
+
+/* ===== Export/Import ===== */
+function exportData(){
+  if(!current) return toast("سجل دخول أولاً");
+  const dataStr=JSON.stringify(users()[current],null,2);
+  const blob=new Blob([dataStr],{type:"application/json"}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=`kan-${users()[current].username}-${day()}.json`; a.click(); URL.revokeObjectURL(url);
+}
+function importData(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader(); reader.onload=ev=>{
+    try{const obj=JSON.parse(ev.target.result); if(!obj.prayers) throw 0;
+      let all=users(); all[current]= {...all[current], prayers:obj.prayers}; saveUsers(all); render(); toast("تم الاستيراد بنجاح");
+    }catch{toast("ملف غير صالح")}
+  }; reader.readAsText(file);
+}
+function clearCurrentData(){
+  if(!current) return; if(!confirm("هل أنت متأكد من مسح كل سجل الصلوات؟")) return;
+  let all=users(); all[current].prayers={}; saveUsers(all); render(); toast("تم المسح");
+}
+
+/* ===== Initial render ===== */
+function render(){
+ const all=users(),u=all[current]; if(!u){document.getElementById("userArea").innerHTML=`<button class="btn" onclick="openAuth()">دخول</button>`; return}
+ document.getElementById("openBtn").style.display="none";
+ document.getElementById("userArea").innerHTML=`مرحبًا <b>${esc(u.username)}</b> <button class="btn red" style="margin-right:8px" onclick="logout()">خروج</button>`;
+ data=u.prayers[day()]||{}; renderPrayers(); stats(); renderCalendar(); renderDashboard();
+ document.getElementById("todayBadge").textContent=day();
+ document.getElementById("heroDate").textContent=new Date().toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long",year:"numeric"}) + " - ﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾";
+ // prayer times demo
+ document.getElementById("prayerTimes").innerHTML=Object.entries({الفجر:"05:00",الظهر:"12:10",العصر:"15:30",المغرب:"18:05",العشاء:"19:30"}).map(([k,v])=>`<div style="d
+ (function(){
+  let s=localStorage.getItem(keySession);
+  if(s&&users()[s]){current=s}
+  render(); renderAzkar(); renderDuas(); renderSurahs(); loadTasbih();
+  if(localStorage.getItem(keyQFont)) document.getElementById("quranReader").style.fontSize=localStorage.getItem(keyQFont)+"px";
+  applyTheme();
+  document.getElementById("todayBadge").textContent=day();
+})();
+</script>
+</body>
+</html>

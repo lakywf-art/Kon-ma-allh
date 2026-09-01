@@ -221,6 +221,16 @@
         }
         .prayer-item:last-child { border-bottom: none; }
 
+        .prayer-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prayer-time-badge {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
         .prayer-btns {
             display: flex;
             gap: 5px;
@@ -262,8 +272,8 @@
             display: block;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            active: transform: scale(0.95);
         }
+        .counter-btn:active { transform: scale(0.95); }
 
         /* Buttons & Forms */
         .btn {
@@ -350,14 +360,18 @@
             </div>
         </section>
 
-        <!-- 2. إتمام الصلاة -->
+        <!-- 2. إتمام الصلاة ومواقيتها -->
         <section id="prayerPage" class="page">
             <div class="card">
-                <h3>🕌 تسجيل الصلوات اليومية</h3>
-                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px;">حدد حالة كل صلاة لليوم</p>
+                <h3>🕌 تسجيل الصلوات ومواقيتها</h3>
                 
+                <!-- زر تفعيل التنبيهات -->
+                <button class="btn" id="notifBtn" onclick="requestNotificationPermission()" style="background-color: var(--accent-color); color: #000; font-weight: bold; margin-bottom: 15px;">
+                    🔔 تفعيل تنبيهات الصلاة
+                </button>
+
                 <div id="prayersList">
-                    <!-- سيتم إضافة الصلوات بواسطة JS -->
+                    <!-- سيتم إضافة الصلوات والمواقيت بواسطة JS -->
                 </div>
 
                 <div style="margin-top: 15px; text-align: center; font-weight: bold;" id="todaySummary">
@@ -459,7 +473,7 @@
                         <li><b>الرفع من الركوع:</b> الاعتدال قائلاً "سمع الله لمن حمده، ربنا ولك الحمد".</li>
                         <li><b>السجود:</b> السجود على الأعضاء السبعة بقول "سبحان ربي الأعلى" (3 مرات).</li>
                         <li><b>الجلوس بين السجدتين:</b> الجلوس وقول "رب اغفر لي".</li>
-                        <li><b>التشهد والأخير:</b> قراءة التحيات والصلاة الإبراهيمية.</li>
+                        <li><b>التشهد الأخير:</b> قراءة التحيات والصلاة الإبراهيمية.</li>
                         <li><b>السلام:</b> الالتفات يمينًا ويسارًا قائلاً "السلام عليكم ورحمة الله".</li>
                     </ol>
                 </div>
@@ -469,7 +483,7 @@
         <!-- 4. الحساب -->
         <section id="accountPage" class="page">
             <div class="card">
-                <h3>👤 حساب المستخدم المحالي</h3>
+                <h3>👤 حساب المستخدم المحلي</h3>
                 <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:15px;">بياناتك محفوظة محليًا على هذا الجهاز</p>
                 <div class="input-group">
                     <label>اسم المستخدم</label>
@@ -479,6 +493,11 @@
             </div>
         </section>
 
+    </div>
+
+    <!-- سطر الحقوق والتصميم -->
+    <div style="text-align: center; padding: 15px 10px 5px; font-size: 0.85rem; color: var(--text-secondary); margin-top: 10px;">
+        تم تصميم هذا الموقع بواسطة المبرمج <b>محمد عمرو</b> 🌿
     </div>
 
     <!-- Bottom Navigation -->
@@ -498,11 +517,12 @@
         <button class="nav-item" onclick="showPage('guidePage')">
             <span>📖</span>الدليل
         </button>
- 
     </nav>
-     <script>
+
+    <script>
         // --- Data & State Storage ---
         const prayers = ['الفجر', 'الظهر', 'العصر', 'المغرب', 'العشاء'];
+        let prayerTimesData = null;
         
         let appData = {
             user: 'زائر',
@@ -511,15 +531,10 @@
             counter: 0
         };
 
-        // تحميل البيانات بأمان مع حماية من الأخطاء
         try {
             const saved = localStorage.getItem('konWithAllahData');
-            if (saved) {
-                appData = Object.assign(appData, JSON.parse(saved));
-            }
-        } catch(e) {
-            console.error("خطأ في تحميل localStorage", e);
-        }
+            if (saved) appData = Object.assign(appData, JSON.parse(saved));
+        } catch(e) { console.error(e); }
 
         const azkarData = {
             sabah: [
@@ -543,7 +558,7 @@
         // --- Core Functions ---
         function initApp() {
             applyTheme(appData.theme || 'light');
-            renderPrayers();
+            fetchPrayerTimes();
             updateStats();
             
             const counterEl = document.getElementById('counterVal');
@@ -558,9 +573,7 @@
         function saveData() {
             try {
                 localStorage.setItem('konWithAllahData', JSON.stringify(appData));
-            } catch(e) {
-                console.error("خطأ في حفظ البيانات", e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         // Navigation
@@ -592,9 +605,20 @@
             if (icon) icon.innerText = theme === 'dark' ? '☀️' : '🌙';
         }
 
-        // --- Prayer Tracker ---
+        // --- Prayer Tracker & API Times ---
         function getTodayKey() {
             return new Date().toISOString().split('T')[0];
+        }
+
+        async function fetchPrayerTimes() {
+            try {
+                const res = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Cairo&country=Egypt&method=5');
+                const data = await res.json();
+                prayerTimesData = data.data.timings;
+            } catch(e) {
+                console.error("لم نتمكن من جلب المواقيت تلقائياً", e);
+            }
+            renderPrayers();
         }
 
         function renderPrayers() {
@@ -606,12 +630,19 @@
             if (!container) return;
             container.innerHTML = '';
 
+            const apiKeys = { 'الفجر': 'Fajr', 'الظهر': 'Dhuhr', 'العصر': 'Asr', 'المغرب': 'Maghrib', 'العشاء': 'Isha' };
+
             prayers.forEach(p => {
                 const status = appData.prayersHistory[today][p] || '';
+                const pTime = prayerTimesData ? prayerTimesData[apiKeys[p]] : '';
+                
                 const div = document.createElement('div');
                 div.className = 'prayer-item';
                 div.innerHTML = `
-                    <span><b>${p}</b></span>
+                    <div class="prayer-info">
+                        <span><b>${p}</b></span>
+                        ${pTime ? `<span class="prayer-time-badge">🕒 ${pTime}</span>` : ''}
+                    </div>
                     <div class="prayer-btns">
                         <button class="btn-status ${status === 'done' ? 'done' : ''}" onclick="setPrayerStatus('${p}', 'done')">✅ صليت</button>
                         <button class="btn-status ${status === 'missed' ? 'missed' : ''}" onclick="setPrayerStatus('${p}', 'missed')">❌ فاتتني</button>
@@ -644,6 +675,70 @@
             
             if (summaryEl) summaryEl.innerText = `أتممت ${count} من 5 صلوات — ${percentage}%`;
             if (ratioEl) ratioEl.innerText = `${count} / 5`;
+        }
+
+        // --- Notifications Engine ---
+        function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                alert("المتصفح لا يدعم التنبيهات الإشعارات");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    alert("تم تفعيل التنبيهات بنجاح! 🔔");
+                    setInterval(checkPrayerReminders, 60000);
+                    checkPrayerReminders();
+                } else {
+                    alert("تم رفض التنبيهات. يمكنك إتاحتها من إعدادات متصفحك.");
+                }
+            });
+        }
+
+        function checkPrayerReminders() {
+            if (!prayerTimesData) return;
+
+            const now = new Date();
+            const currentHM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const today = getTodayKey();
+            const todayStatus = (appData.prayersHistory && appData.prayersHistory[today]) || {};
+
+            const list = [
+                { name: 'الفجر', time: prayerTimesData.Fajr },
+                { name: 'الظهر', time: prayerTimesData.Dhuhr },
+                { name: 'العصر', time: prayerTimesData.Asr },
+                { name: 'المغرب', time: prayerTimesData.Maghrib },
+                { name: 'العشاء', time: prayerTimesData.Isha }
+            ];
+
+            list.forEach((p, index) => {
+                // 1. وقت الصلاة بالضبط
+                if (currentHM === p.time) {
+                    sendNotification("🌙 موعد الصلاة", `حان الآن موعد صلاة ${p.name}`);
+                }
+
+                // 2. تنبيه قبل 15 دقيقة لو الصلاة السابقة لم تسجل
+                const [h, m] = p.time.split(':').map(Number);
+                const pDate = new Date();
+                pDate.setHours(h, m - 15, 0);
+
+                const remHM = `${String(pDate.getHours()).padStart(2, '0')}:${String(pDate.getMinutes()).padStart(2, '0')}`;
+                
+                if (currentHM === remHM) {
+                    const prevPrayer = index > 0 ? list[index - 1] : null;
+                    if (prevPrayer && todayStatus[prevPrayer.name] !== 'done') {
+                        sendNotification("⚠️ تذكير بالصلاة", `اقتربت صلاة ${p.name} (باقي 15 دقيقة)، ولم تسجل صلاة ${prevPrayer.name} بعد!`);
+                    }
+                }
+            });
+        }
+
+        function sendNotification(title, body) {
+            if (Notification.permission === "granted") {
+                new Notification(title, {
+                    body: body,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/2972/2972531.png'
+                });
+            }
         }
 
         // --- Stats & History ---
@@ -750,11 +845,10 @@
             }
         }
 
-        // التشغيل عند التنسيق والتأكد من تحميل الصفحة
+        // التشغيل المباشر
         document.addEventListener('DOMContentLoaded', function() {
             initApp();
         });
     </script>
 </body>
 </html>
-

@@ -1,21 +1,23 @@
 {
   "short_name": "كان مع الله",
-  "name": "تطبيق كان مع الله",
+  "name": "تطبيق كان مع الله - أذكار ومسبحة",
   "icons": [
     {
-      "src": "icon-192.png",
-      "type": "image/png",
+      "src": "icon-192.png.jpg",
+      "type": "image/jpeg",
       "sizes": "192x192"
     },
     {
-      "src": "icon-512.png",
-      "type": "image/png",
+      "src": "icon-512.png.jpg",
+      "type": "image/jpeg",
       "sizes": "512x512"
     }
   ],
   "start_url": "./index.html",
-  "background_color": "#ffffff",
-  "theme_color": "#10b981",
+  "background_color": "#f8f9fa",
+  "theme_color": "#1b4332",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "dir": "rtl",
+  "lang": "ar"
 }

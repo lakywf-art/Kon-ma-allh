@@ -985,14 +985,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() { initApp(); });
-    </script>
     <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js');
-    });
-  }
-    </script>
-    
+      navigator.serviceWorker.register('/Kon-ma-allh/sw.js')
+        .then(reg => console.log('SW Success:', reg))
+        .catch(err => console.log('SW Fail:', err));
+</script>
 </body>
 </html>

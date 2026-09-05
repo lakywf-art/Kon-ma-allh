@@ -1,10 +1,10 @@
 const CACHE_NAME = 'kan-ma-allah-v2';
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.jpg',
-  './icon-512.jpg'
+  '/Kon-ma-allh/',
+  '/Kon-ma-allh/index.html',
+  '/Kon-ma-allh/manifest.json',
+  '/Kon-ma-allh/icon-192.jpg',
+  '/Kon-ma-allh/icon-512.jpg'
 ];
 
 self.addEventListener('install', (e) => {
@@ -23,4 +23,4 @@ self.addEventListener('fetch', (e) => {
     caches.match(e.request).then((res) => res || fetch(e.request))
   );
 });
-                      
+    

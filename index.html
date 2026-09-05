@@ -711,7 +711,7 @@
             { cat: "hamm", text: "اللَّهُمَّ رَحْمَتَكَ أَرْجُو فَلا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ، وَأَصْلِحْ لِي شَأْنِي كُلَّهُ لا إِلَهَ إِلا أَنْتَ" }
         ];
 
-        function initApp() {
+                                function initApp() {
             applyTheme(appData.theme || 'light');
             fetchPrayerTimes();
             updateStats();
@@ -724,10 +724,20 @@
             
             filterDuaa();
 
+            // فحص دقيق كل دقيقة لتحديث اليوم والصلوات والورد فور تجاوز منتصف الليل[span_1](start_span)[span_1](end_span)
             setInterval(() => {
                 renderPrayers();
                 checkWerdReset();
             }, 60000);
+
+            // تحديث البيانات تلقائياً بمجرد فتح التطبيق أو العودة إليه من الخلفية بعد منتصف الليل[span_2](start_span)[span_2](end_span)
+            document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === "visible") {
+                    checkWerdReset();
+                    renderPrayers();
+                    updateStats();
+                }
+            });
         }
 
         function saveData() {

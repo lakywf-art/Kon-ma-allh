@@ -986,18 +986,11 @@
 
         document.addEventListener('DOMContentLoaded', function() { initApp(); });
     </script>
+    
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/Kon-ma-allh/sw.js')
-        .then(reg => console.log('SW Success:', reg))
-        .catch(err => console.log('SW Fail:', err));
-    });
-  }</script>
-
-<!-- زر تثبيت التطبيق -->
-<div style="text-align: center; margin: 20px 0;">
-  <button id="installBtn" style="display:none; background:#1b4332; color:white; padding:12px 24px; border:none; border-radius:12px; font-size:16px; font-family:inherit; cursor:pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">📱 تثبيت التطبيق على جهازك</button>
+<!-- زر تثبيت التطبيق (ظاهر دائماً) -->
+<div style="text-align: center; margin: 30px 0; padding: 0 20px;">
+  <button id="installBtn" style="width: 100%; max-width: 300px; background: linear-gradient(135deg, #1b4332, #2d6a4f); color: white; padding: 14px 20px; border: none; border-radius: 14px; font-size: 16px; font-weight: bold; font-family: inherit; cursor: pointer; box-shadow: 0 4px 12px rgba(27,67,50,0.3);">📱 تثبيت التطبيق على جهازك</button>
 </div>
 
 <script>
@@ -1005,23 +998,25 @@
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    const btn = document.getElementById('installBtn');
-    if(btn) btn.style.display = 'inline-block';
+  });
 
-    btn.addEventListener('click', () => {
-      btn.style.display = 'none';
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('تم تثبيت التطبيق بنجاح');
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          console.log('تم قبول التثبيت');
         }
         deferredPrompt = null;
-      });
+      } else {
+        alert("لتثبيت التطبيق:\nاضغط على نقاط المتصفح الثلاث (⋮) بالأعلى، ثم اختر 'تثبيت التطبيق' (Install app) أو 'الإضافة إلى الشاشة الرئيسية'.");
+      }
     });
-  });
+  }
 </script>
 
 </body>
 </html>
-
-
+    
